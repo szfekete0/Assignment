@@ -1,0 +1,235 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-001-create-statuses
+      author: szabolcs-fekete
+      changes:
+        - createTable:
+            tableName: statuses
+            columns:
+              - column:
+                  name: status_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-002-create-surveys
+      author: szabolcs-fekete
+      changes:
+        - createTable:
+            tableName: surveys
+            columns:
+              - column:
+                  name: survey_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expected_completes
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completion_points
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: filtered_points
+                  type: INT
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-003-create-members
+      author: szabolcs-fekete
+      changes:
+        - createTable:
+            tableName: members
+            columns:
+              - column:
+                  name: member_id
+                  type: INT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email_address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_active
+                  type: TINYINT(1)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: members
+            columnNames: email_address
+            constraintName: uk_members_email
+
+  - changeSet:
+      id: 002-004-create-participation
+      author: szabolcs-fekete
+      changes:
+        - createTable:
+            tableName: participation
+            columns:
+              - column:
+                  name: member_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: survey_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status_id
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: length
+                  type: INT
+        - addPrimaryKey:
+            tableName: participation
+            columnNames: member_id,survey_id
+            constraintName: pk_participation
+        - addForeignKeyConstraint:
+            baseTableName: participation
+            baseColumnNames: member_id
+            referencedTableName: members
+            referencedColumnNames: member_id
+            constraintName: fk_participation_member
+        - addForeignKeyConstraint:
+            baseTableName: participation
+            baseColumnNames: survey_id
+            referencedTableName: surveys
+            referencedColumnNames: survey_id
+            constraintName: fk_participation_survey
+        - addForeignKeyConstraint:
+            baseTableName: participation
+            baseColumnNames: status_id
+            referencedTableName: statuses
+            referencedColumnNames: status_id
+            constraintName: fk_participation_status
+
+  - changeSet:
+      id: 002-005-seed-csv
+      author: szabolcs-fekete
+      changes:
+        - loadUpdateData:
+            file: data/Statuses.csv
+            relativeToChangelogFile: true
+            tableName: statuses
+            primaryKey: status_id
+            separator: ","
+            encoding: UTF-8
+            quotchar: "\""
+            columns:
+              - column:
+                  name: status_id
+                  header: Status Id
+                  type: NUMERIC
+              - column:
+                  name: name
+                  header: Name
+                  type: STRING
+        - loadUpdateData:
+            file: data/Surveys.csv
+            relativeToChangelogFile: true
+            tableName: surveys
+            primaryKey: survey_id
+            separator: ","
+            encoding: UTF-8
+            quotchar: "\""
+            columns:
+              - column:
+                  name: survey_id
+                  header: Survey Id
+                  type: NUMERIC
+              - column:
+                  name: name
+                  header: Name
+                  type: STRING
+              - column:
+                  name: expected_completes
+                  header: Expected completes
+                  type: NUMERIC
+              - column:
+                  name: completion_points
+                  header: Completion points
+                  type: NUMERIC
+              - column:
+                  name: filtered_points
+                  header: Filtered points
+                  type: NUMERIC
+        - loadUpdateData:
+            file: data/Members.csv
+            relativeToChangelogFile: true
+            tableName: members
+            primaryKey: member_id
+            separator: ","
+            encoding: UTF-8
+            quotchar: "\""
+            columns:
+              - column:
+                  name: member_id
+                  header: Member Id
+                  type: NUMERIC
+              - column:
+                  name: full_name
+                  header: Full name
+                  type: STRING
+              - column:
+                  name: email_address
+                  header: E-mail address
+                  type: STRING
+              - column:
+                  name: is_active
+                  header: Is Active
+                  type: NUMERIC
+        - loadUpdateData:
+            file: data/Participation.csv
+            relativeToChangelogFile: true
+            tableName: participation
+            primaryKey: member_id,survey_id
+            separator: ","
+            encoding: UTF-8
+            quotchar: "\""
+            columns:
+              - column:
+                  name: member_id
+                  header: Member Id
+                  type: NUMERIC
+              - column:
+                  name: survey_id
+                  header: Survey Id
+                  type: NUMERIC
+              - column:
+                  name: status_id
+                  header: Status
+                  type: NUMERIC
+              - column:
+                  name: length
+                  header: Length
+                  type: NUMERIC
